@@ -1,0 +1,78 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is an example",
+    "version": "v1",
+    "title": "A worthy title"
+  },
+  "host": "example.org.fake",
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/v1",
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "paths": {
+    "/resources": {
+      "post": {
+        "description": "Get resources",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/pizza"
+                },
+                {
+                  "$ref": "#/definitions/dessert"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "pizza": {
+      "type": "object",
+      "required": [
+        "toppings"
+      ],
+      "properties": {
+        "toppings": {
+          "type": "array",
+          "description": "pizza toppings",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dessert": {
+      "type": "object",
+      "required": [
+        "sprinkles"
+      ],
+      "properties": {
+        "sprinkles": {
+          "type": "object",
+          "description": "sprinkles",
+          "properties": {
+            "flavour": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  }
+}

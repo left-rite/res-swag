@@ -1,0 +1,55 @@
+{
+  "name": "res-swag",
+  "version": "0.1.3",
+  "description": "validate json response with parsed swagger",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prebuild": "npm run clean && npm test",
+    "build": "npm run clean && tsc",
+    "clean": "rimraf dist",
+    "test": "mocha -r ts-node/register test/**/*.test.ts",
+    "lint": "tslint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/left-rite/res-swag.git"
+  },
+  "keywords": [
+    "http",
+    "json",
+    "json-schema",
+    "open-api",
+    "openapi",
+    "schema",
+    "test",
+    "testing",
+    "validate",
+    "validation",
+    "yaml"
+  ],
+  "author": "Ambrose Fok <left.righteous@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/left-rite/res-swag/issues"
+  },
+  "homepage": "https://github.com/left-rite/res-swag",
+  "dependencies": {
+    "ajv": "6.5.4",
+    "deref": "0.7.6",
+    "md5": "2.2.1"
+  },
+  "devDependencies": {
+    "@types/ajv": "1.0.0",
+    "@types/chai": "4.1.7",
+    "@types/md5": "2.1.33",
+    "@types/mocha": "5.2.5",
+    "@types/node": "10.12.0",
+    "chai": "4.2.0",
+    "mocha": "5.2.0",
+    "rimraf": "2.6.2",
+    "ts-node": "7.0.1",
+    "tslint": "5.12.1",
+    "typescript": "3.1.3"
+  }
+}

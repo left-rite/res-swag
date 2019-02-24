@@ -1,0 +1,159 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "This is an example",
+    "version": "v1",
+    "title": "A worthy title"
+  },
+  "servers": [
+     {
+        "url": "http://example.org.fake"
+     },
+     {
+        "url": "http://example.org.fake",
+        "basePath": "/v1/basePath"
+     }
+  ],
+  "paths": {
+    "/resources": {
+      "get": {
+        "description": "Get resources",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                  "schema": {
+                    "$ref": "#/definitions/resource"
+                  }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                  "schema": {
+                    "$ref": "#/definitions/badRequest"
+                  }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resources/{id}": {
+      "get": {
+        "description": "Get a resource",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                  "schema": {
+                    "$ref": "#/definitions/resource"
+                  }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                  "schema": {
+                    "$ref": "#/definitions/badRequest"
+                  }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a resource",
+        "responses": {
+          "204": {
+            "description": "Success",
+            "schema": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                  "schema": {
+                    "$ref": "#/definitions/badRequest"
+                  }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "resource": {
+      "type": "object",
+      "required": [
+        "attributeOne",
+        "attributeTwo"
+      ],
+      "properties": {
+        "attributeOne": {
+          "type": "string",
+          "description": "This string"
+        },
+        "attributeTwo": {
+          "type": "object",
+          "description": "This object has properties",
+          "required": [
+            "subAttributeOne",
+            "subAttributeTwo"
+          ],
+          "properties": {
+            "subAttributeOne": {
+              "type": "number",
+              "description": "Number that's 32 bit big",
+              "format": "int32"
+            },
+            "subAttributeTwo": {
+              "type": "boolean",
+              "description": "True or false"
+            }
+          }
+        }
+      }
+    },
+    "addOnToResource": {
+      "type": "object",
+      "required": [
+        "attributeThree",
+        "attributeFour"
+      ],
+      "properties": {
+        "attributeThree": {
+          "type": "boolean",
+          "description": "This string"
+        },
+        "attributeFour": {
+          "type": "array",
+          "description": "This is an array of strings",
+          "items": {
+            "type": "string",
+            "description": "any sort of string"
+          }
+        }
+      }
+    },
+    "badRequest": {
+      "type": "object",
+      "required": [
+        "errors"
+      ],
+      "properties": {
+        "errors": {
+          "type": "string",
+          "description": "This tells you the bad things that you have done"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is an example",
+    "version": "v1",
+    "title": "A worthy title"
+  },
+  "host": "example.org.fake",
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/v1",
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "paths": {
+    "/resources": {
+      "get": {
+        "description": "Get resources",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/resource"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/badRequest"
+            }
+          }
+        }
+      }
+    },
+    "/resources/{id}": {
+      "get": {
+        "description": "Get a resource",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/resource"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/badRequest"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a resource",
+        "responses": {
+          "204": {
+            "description": "Success",
+            "schema": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/badRequest"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "resource": {
+      "type": "object",
+      "required": [
+        "attributeOne",
+        "attributeTwo"
+      ],
+      "properties": {
+        "attributeOne": {
+          "type": "string",
+          "description": "This string"
+        },
+        "attributeTwo": {
+          "type": "object",
+          "description": "This object has properties",
+          "required": [
+            "subAttributeOne",
+            "subAttributeTwo"
+          ],
+          "properties": {
+            "subAttributeOne": {
+              "type": "number",
+              "description": "Number that's 32 bit big",
+              "format": "int32"
+            },
+            "subAttributeTwo": {
+              "type": "boolean",
+              "description": "True or false"
+            }
+          }
+        }
+      }
+    },
+    "badRequest": {
+      "type": "object",
+      "required": [
+        "errors"
+      ],
+      "properties": {
+        "errors": {
+          "type": "string",
+          "description": "This tells you the bad things that you have done"
+        }
+      }
+    }
+  }
+}
