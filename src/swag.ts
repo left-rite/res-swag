@@ -33,6 +33,7 @@ export class Swag {
     const url = get(response, this.paths.url);
     const method = get(response, this.paths.method);
     const status = get(response, this.paths.status);
+    const contentType = get(response, this.paths.contentType);
     const responseBody = get(response, this.paths.responseBody);
     const responseJson = responseBody ? toJson(responseBody) : null;
     
@@ -45,7 +46,7 @@ export class Swag {
         schemaReference = this.swagger2.getSchemaReference(definition, url, method, status);
         break;
       case 3:
-        schemaReference = this.openapi3.getSchemaReference(definition, url, method, status, useCaseOptions);
+        schemaReference = this.openapi3.getSchemaReference(definition, url, method, status, contentType, useCaseOptions);
         break;
       default:
         throw new Error('Unknown Swagger/OpenAPI version, only v2 and v3 are supported');
@@ -87,9 +88,9 @@ export class Swag {
 
     banUnknownProperties(options.banUnknownProperties, definition);
 
-    allowNullableProperties(options.allowNullableProperties, definition);
+    allowNullableProperties(options.implicitNullableProperties, definition);
 
-    allowNullableObjects(options.allowNullableObjects, definition);
+    allowNullableObjects(options.implicitNullableObjects, definition);
   }
 
 }

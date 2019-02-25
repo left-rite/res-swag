@@ -12,6 +12,7 @@ const jsonPaths = {
   url: 'req.url',
   method: 'req.method',
   status: 'status',
+  contentType: 'headers.content-type',
   responseBody: 'body',
 };
 
@@ -46,6 +47,7 @@ const jsonPaths = {
   url: 'req.url',
   method: 'req.method',
   status: 'status',
+  contentType: 'headers.content-type',
   responseBody: 'body',
 };
 ```
@@ -67,8 +69,8 @@ The validation function ```swag.validate``` takes the following arguments:
 ```javascript
 {
   banUnknownProperties: true,
-  allowNullableProperties: true,
-  allowNullableObjects: true,
+  implicitNullableProperties: true,
+  implicitNullableObjects: true,
   ignoreUnknownServer: true,
 }
 ```

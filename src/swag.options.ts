@@ -1,14 +1,14 @@
 export const defaultOptions: SwagOptions = {
   banUnknownProperties: true,
-  allowNullableProperties: true,
-  allowNullableObjects: true,
+  implicitNullableProperties: true,
+  implicitNullableObjects: true,
   ignoreUnknownServer: true,
 }
 
 export interface SwagOptions {
   banUnknownProperties: boolean,
-  allowNullableProperties: boolean,
-  allowNullableObjects: boolean,
+  implicitNullableProperties: boolean,
+  implicitNullableObjects: boolean,
   ignoreUnknownServer: boolean,
 }
 

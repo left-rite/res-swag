@@ -3,6 +3,7 @@ import { Swag } from '../src/swag';
 
 const swagger = require('./resources/swagger-2.json');
 const swaggerAllOf = require('./resources/swagger-2-allOf.json');
+const openApi = require('./resources/openapi-3.json');
 
 describe('swag test', () => {
 
@@ -13,6 +14,7 @@ describe('swag test', () => {
       url: 'req.url',
       method: 'req.method',
       status: 'status',
+      contentType: 'headers.content-type',
       responseBody: 'body',
     };
     
@@ -74,7 +76,7 @@ describe('swag test', () => {
 
   });
   
-  describe('validate response object with null property against schema with allowNullableProperties = true', () => {
+  describe('validate response object with null property against schema with implicitNullableProperties = true', () => {
 
     it('will result in a pass', () => {
       const getMoreResources = {
@@ -92,13 +94,13 @@ describe('swag test', () => {
         }
       };
 
-      const result = swag.validate(swagger, getMoreResources, { allowNullableProperties: true });
+      const result = swag.validate(swagger, getMoreResources, { implicitNullableProperties: true });
       expect(result).to.be.true;
     });
 
   });
   
-  describe('validate response object with null property against schema with allowNullableProperties = false', () => {
+  describe('validate response object with null property against schema with implicitNullableProperties = false', () => {
 
     it('will result in a fail', () => {
       const getMoreResources = {
@@ -116,7 +118,7 @@ describe('swag test', () => {
         }
       };
 
-      const result = swag.validate(swagger, getMoreResources, { allowNullableProperties: false });
+      const result = swag.validate(swagger, getMoreResources, { implicitNullableProperties: false });
 
       expect(result).to.be.not.true;
     });
@@ -279,6 +281,34 @@ describe('swag test', () => {
       expect(result, JSON.stringify(result, null, 2)).to.be.true;
     });
 
+  });
+
+  describe('open-api 3.0 spec', () => {
+    const CONTENT_TYPE = 'content-type';
+    const getResponse = {
+      status: 200,
+      body: {
+        attributeOne: 'a string',
+        attributeTwo: {
+          subAttributeOne: 777,
+          subAttributeTwo: true,
+        },
+      },
+      req: {
+        url: 'http://v1/resources/777',
+        method: 'get',
+      },
+      headers: {
+        [CONTENT_TYPE]: 'application/json',
+      },
+    };
+
+    it('will result in a pass', () => {
+      let result;
+      try { result = swag.validate(openApi, getResponse) } catch(e) { result = e };
+      
+      expect(result, JSON.stringify(result, null, 2)).to.be.true;
+    });
   });
 
 });

@@ -13,7 +13,7 @@ export class OpenApi3Navigator {
     this.serverInfo = new ServerInfoNavigator;
   }
 
-  getSchemaReference(openapi: OpenApi3, url: string, method: string, status: number, options: SwagOptions): string {
+  getSchemaReference(openapi: OpenApi3, url: string, method: string, status: number, contentType: string | string[], options: SwagOptions): string {
     const basePath = this.serverInfo.getBasePath(openapi, url, options.ignoreUnknownServer) || '';
     const paths = getProperties(openapi.paths);
     
@@ -34,10 +34,24 @@ export class OpenApi3Navigator {
     const statuses = getProperties(path[method].responses);
 
     if (!statuses.includes(status.toString())) {
-      throw new Error (`The status ${status} did not match available statuses "${statuses.join(', ')}" in "${method} ${match}"`);
+      throw new Error(`The status ${status} did not match available statuses "${statuses.join(', ')}" in "${method} ${match}"`);
     }
 
-    return `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}/content/application~1json/schema`;
+    const responseContentType = Array.isArray(contentType) ? contentType : contentType.split(';').map(c => c.trim());
+    const availableContentType = getProperties(path[method].responses[status].content);
+    
+    const types = responseContentType.filter(r => availableContentType.includes(r));
+
+    if (types.length !== 1) {
+      const actual = responseContentType.join('; ');
+      const expected = availableContentType.join('; ');
+      const scenario = types.length === 0 ? 'did not match any of the available' : 'matched more than 1 of the available';
+      throw new Error(`The content-type "${actual}" ${scenario} content-types "${expected}" in "${method} ${match} ${status}"`);
+    }
+
+    const type = types[0];
+
+    return `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}/content/${encodeJsonProperty(type)}/schema`;
   }
 
 }
