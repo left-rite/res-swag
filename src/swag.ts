@@ -48,7 +48,7 @@ export class Swag {
         schemaReference = this.openapi3.getSchemaReference(definition, url, method, status, useCaseOptions);
         break;
       default:
-        throw new Error('Unknown Swagger/OpenAPI version');
+        throw new Error('Unknown Swagger/OpenAPI version, only v2 and v3 are supported');
     }
 
     const signature = JSON.stringify( { definition, options });
@@ -74,6 +74,10 @@ export class Swag {
   }
 
   private determineVersion(definition: Swagger2 & OpenApi3): Version {
+    if (!definition.swagger && !definition.definitions) {
+      throw new Error('Could not determine if definition is a Swagger/OpenAPI specification');
+    }
+
     const [major, minor, patch] = (definition.swagger || definition.openapi).split('.').map(v => Number(v));
 
     return { major, minor, patch };
