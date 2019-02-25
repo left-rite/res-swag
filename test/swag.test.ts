@@ -270,8 +270,8 @@ describe('swag test', () => {
       let result;
       try { result = swag.validate(swaggerAllOf, postFood, { banUnknownProperties: true }) } catch(e) { result = e };
       
-      expect(result, JSON.stringify(result, null, 2)).to.be.instanceOf(Array);
-      expect(result.length, JSON.stringify(result, null, 2)).to.be.equal(1);
+      expect(result, JSON.stringify(result, null, 2)).to.not.be.true;
+      expect(result.errors, JSON.stringify(result, null, 2)).to.be.be.instanceOf(Array);
     });
 
     it('will result in a pass when additional property exists banUnknownProperties = false', () => {

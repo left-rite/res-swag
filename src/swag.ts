@@ -12,6 +12,7 @@ import { OpenApi3 } from './models/openapi-3.0.model';
 import { Swagger2Navigator } from './swagger/swagger-2';
 import { OpenApi3Navigator } from './open-api/open-api-3';
 import { mergeSubschemas } from './util/schema';
+import { ErrorResponse as ErrorMessage } from './models/error-message.model';
 
 export class Swag {
   
@@ -27,7 +28,7 @@ export class Swag {
     this.options = Object.assign({}, defaultOptions, options);
   }
 
-  validate(definition: any, response: any, options?: Partial<SwagOptions>): boolean | Ajv.ErrorObject[] | PromiseLike<any> {
+  validate(definition: any, response: any, options?: Partial<SwagOptions>): boolean | PromiseLike<any> | ErrorMessage {
     const useCaseOptions = Object.assign({}, this.options, options);
     
     const url = get(response, this.paths.url);
@@ -71,7 +72,13 @@ export class Swag {
 
     const result = this.ajv.validate(key+schemaReference, responseJson);
     
-    return result || this.ajv.errors;
+    const errorMessage: ErrorMessage = { 
+      responseBody: responseJson, 
+      schema: schemaReference, 
+      errors: this.ajv.errors 
+    };
+    
+    return result || errorMessage;
   }
 
   private determineVersion(definition: Swagger2 & OpenApi3): Version {
