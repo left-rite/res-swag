@@ -2,6 +2,7 @@ node_modules/
 src/
 test/
 .vscode/
+playground/
 .gitignore
 .npmignore
 index.ts
