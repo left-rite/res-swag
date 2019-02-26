@@ -72,7 +72,8 @@ export class Swag {
 
     const result = this.ajv.validate(key+schemaReference, responseJson);
     
-    const errorMessage: ErrorMessage = { 
+    const errorMessage: ErrorMessage = {
+      url,
       responseBody: responseJson, 
       schema: schemaReference, 
       errors: this.ajv.errors 
@@ -82,7 +83,7 @@ export class Swag {
   }
 
   private determineVersion(definition: Swagger2 & OpenApi3): Version {
-    if (!definition.swagger && !definition.definitions) {
+    if (!definition.swagger && !definition.openapi) {
       throw new Error('Could not determine if definition is a Swagger/OpenAPI specification');
     }
 
