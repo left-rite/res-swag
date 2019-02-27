@@ -4,6 +4,7 @@ import { OpenApi3 } from '../models/openapi-3.0.model';
 import { ServerInfoNavigator } from './server-info';
 import { SwagOptions } from '../swag.options';
 import { getProperties } from '../util/properties';
+import { findBestPath } from '../util/path';
 
 export class OpenApi3Navigator {
 
@@ -17,16 +18,7 @@ export class OpenApi3Navigator {
     const basePath = this.serverInfo.getBasePath(openapi, url, options.ignoreUnknownServer) || '';
     const paths = getProperties(openapi.paths);
     
-    const match = paths.reduce((m, p) =>
-      toRegex(basePath + p).test(url) && 
-      (
-        (p && p.match(/\//g).length) > (m && m.match(/\//g).length) || 
-        (p && p.match(/\//g).length) === (m && m.match(/\//g).length) && 
-        (p && p.match(/{/g).length) < (m && m.match(/{/g).length)
-      )
-        ? p 
-        : m 
-    , null);
+    const match = findBestPath(url, paths, basePath);
 
     if (!match) {
       throw new Error(`The url "${url}" did not match available basePath "${basePath}" and paths "${paths.join(', ')}"`);
