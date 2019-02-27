@@ -17,7 +17,16 @@ export class OpenApi3Navigator {
     const basePath = this.serverInfo.getBasePath(openapi, url, options.ignoreUnknownServer) || '';
     const paths = getProperties(openapi.paths);
     
-    const match = paths.reduce((m, p) => toRegex(basePath + p).test(url) && (p && p.length) > (m && m.length) ? p : m , null);
+    const match = paths.reduce((m, p) =>
+      toRegex(basePath + p).test(url) && 
+      (
+        (p && p.match(/\//g).length) > (m && m.match(/\//g).length) || 
+        (p && p.match(/\//g).length) === (m && m.match(/\//g).length) && 
+        (p && p.match(/{/g).length) < (m && m.match(/{/g).length)
+      )
+        ? p 
+        : m 
+    , null);
 
     if (!match) {
       throw new Error(`The url "${url}" did not match available basePath "${basePath}" and paths "${paths.join(', ')}"`);

@@ -8,11 +8,20 @@ export interface OpenApi3 {
 
 export interface Server {
   url: string,
-  description: string,
-  variables: Variables,
+  description?: string,
+  variables?: Variables,
 }
 
-type Variables = any;
+interface Variables {
+  [name: string]: Variable,
+};
+
+interface Variable {
+  default: string,
+  description?: string,
+  enum?: string[],
+
+}
 
 interface Paths {
   [path: string]: Method,
