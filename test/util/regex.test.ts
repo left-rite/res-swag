@@ -9,7 +9,7 @@ describe('regex test', () => {
     const regex = toRegex(path);
 
     it('will all be encoded', () => {
-      expect(regex.source).to.be.equal('\\/street\\/([a-zA-Z0-9_-]+)\\/house\\/([a-zA-Z0-9_-]+)');
+      expect(regex.source).to.be.equal('\\/street\\/([a-zA-Z0-9_-]+)\\/house\\/([a-zA-Z0-9_-]+)(?!\\/+.)');
     });
 
   });
