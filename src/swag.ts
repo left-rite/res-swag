@@ -107,15 +107,23 @@ export class Swag {
     const contentType = jsonPtr.get(response, this.paths.contentType);
     const responseBody = jsonPtr.get(response, this.paths.responseBody);
 
-    const checkNull = (n, p) => { if (isNullOrUndefined(p)) { throw new Error(`The ${n} did not have a value. Check the ${n} json pointer`); }};
+    const checkNullOrUndefined = (n, p) => { if (isNullOrUndefined(p)) { 
+      throw new Error(`The ${n} did not have a value. Check the ${n} json pointer`); 
+    }};
 
-    checkNull('url', url);
-    checkNull('method', method);
-    checkNull('status', status);
-    checkNull('contentType', contentType);
-    checkNull('responseBody', responseBody);
+    checkNullOrUndefined('url', url);
+    checkNullOrUndefined('method', method);
+    checkNullOrUndefined('status', status);
+    checkNullOrUndefined('contentType', contentType);
+    checkNullOrUndefined('responseBody', responseBody);
 
-    return { url, method, status, contentType, responseBody };
+    return { 
+      url: url, 
+      method: method.toLowerCase(),
+      status, 
+      contentType, 
+      responseBody
+    };
   }
 
 }
