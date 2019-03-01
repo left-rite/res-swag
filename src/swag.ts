@@ -1,10 +1,10 @@
 import * as Ajv from 'ajv';
 import * as dereference from 'deref';
 import * as md5 from 'md5';
-import { get } from './util/get';
+import * as jsonPtr from 'json-ptr';
 import { toJson } from './util/json';
 import { banUnknownProperties, allowNullableProperties, allowNullableObjects } from './util/properties';
-import { JsonPaths } from './models/json-paths.model';
+import { JsonPointers } from './models/json-pointers.model';
 import { defaultOptions, SwagOptions } from './swag.options';
 import { Version } from './models/supported-versions.model';
 import { Swagger2 } from './models/swagger-2.0.model';
@@ -13,6 +13,8 @@ import { Swagger2Navigator } from './swagger/swagger-2';
 import { OpenApi3Navigator } from './open-api/open-api-3';
 import { mergeSubschemas } from './util/schema';
 import { ErrorResponse as ErrorMessage } from './models/error-message.model';
+import { isNullOrUndefined } from 'util';
+import { ResponseData } from './models/response-data.model';
 
 export class Swag {
   
@@ -21,7 +23,7 @@ export class Swag {
   private swagger2: Swagger2Navigator;
   private openapi3: OpenApi3Navigator;
 
-  constructor(private paths: JsonPaths, options?: Partial<SwagOptions>, ajvOptions?: Ajv.Options) {
+  constructor(private paths: JsonPointers, options?: Partial<SwagOptions>, ajvOptions?: Ajv.Options) {
     this.ajv = new Ajv(ajvOptions);
     this.swagger2 = new Swagger2Navigator();
     this.openapi3 = new OpenApi3Navigator();
@@ -31,11 +33,8 @@ export class Swag {
   validate(definition: any, response: any, options?: Partial<SwagOptions>): boolean | PromiseLike<any> | ErrorMessage {
     const useCaseOptions = Object.assign({}, this.options, options);
     
-    const url = get(response, this.paths.url);
-    const method = get(response, this.paths.method);
-    const status = get(response, this.paths.status);
-    const contentType = get(response, this.paths.contentType);
-    const responseBody = get(response, this.paths.responseBody);
+    const { url, method, status, contentType, responseBody } = this.getRequiredData(response);
+
     const responseJson = responseBody ? toJson(responseBody) : null;
     
     const version = this.determineVersion(definition);
@@ -99,6 +98,24 @@ export class Swag {
     allowNullableProperties(options.implicitNullableProperties, definition);
 
     allowNullableObjects(options.implicitNullableObjects, definition);
+  }
+
+  private getRequiredData(response: any): ResponseData {
+    const url = jsonPtr.get(response, this.paths.url);
+    const method = jsonPtr.get(response, this.paths.method);
+    const status = jsonPtr.get(response, this.paths.status);
+    const contentType = jsonPtr.get(response, this.paths.contentType);
+    const responseBody = jsonPtr.get(response, this.paths.responseBody);
+
+    const checkNull = (n, p) => { if (isNullOrUndefined(p)) { throw new Error(`The ${n} did not have a value. Check the ${n} json pointer`); }};
+
+    checkNull('url', url);
+    checkNull('method', method);
+    checkNull('status', status);
+    checkNull('contentType', contentType);
+    checkNull('responseBody', responseBody);
+
+    return { url, method, status, contentType, responseBody };
   }
 
 }

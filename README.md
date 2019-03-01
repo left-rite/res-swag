@@ -8,15 +8,15 @@ Currently supports Swagger 2 and OpenAPI 3
 ```javascript
 import { Swag } from 'res-swag';
 
-const jsonPaths = {
-  url: 'req.url',
-  method: 'req.method',
-  status: 'status',
-  contentType: 'headers.content-type',
-  responseBody: 'body',
+const jsonPointers = {
+  url: '/req/url',
+  method: '/req/method',
+  status: '/status',
+  contentType: '/headers/content-type',
+  responseBody: '/body',
 };
 
-const swag = new Swag(jsonPaths);
+const swag = new Swag(jsonPointers);
 
 swag.ajv.addFormat('int32', {
   type: 'number',
@@ -28,7 +28,7 @@ swag.validate(definition, response, options);
 
 
 ### Details
-The ```jsonPaths``` object lets the validator know where to find the url, method, status and response body to the response of the API request.
+The ```jsonPointers``` object lets the validator know where to find the url, method, status and response body to the response of the API request.
 E.g. if the response from has the following shape:
 ```javascript
 interface Response {
@@ -40,15 +40,15 @@ interface Response {
   body,
 }
 ```
-then the ```jsonPaths``` object should look like:
+then the ```jsonPointers``` object should look like:
 
 ```javascript
-const jsonPaths = {
-  url: 'req.url',
-  method: 'req.method',
-  status: 'status',
-  contentType: 'headers.content-type',
-  responseBody: 'body',
+const jsonPointers = {
+  url: '/req/url',
+  method: '/req/method',
+  status: '/status',
+  contentType: '/headers/content-type',
+  responseBody: '/body',
 };
 ```
 

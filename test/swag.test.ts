@@ -5,17 +5,18 @@ const swagger = require('./resources/swagger-2.json');
 const swaggerAllOf = require('./resources/swagger-2-allOf.json');
 const openApi = require('./resources/openapi-3.json');
 
-describe('swag test', () => {
+const CONTENT_TYPE = 'content-type';
 
+describe('swag test', () => {
   let swag: Swag;
 
   before('new Swag', () => {
     const jsonPaths = {
-      url: 'req.url',
-      method: 'req.method',
-      status: 'status',
-      contentType: 'headers.content-type',
-      responseBody: 'body',
+      url: '/req/url',
+      method: '/req/method',
+      status: '/status',
+      contentType: '/header/content-type',
+      responseBody: '/body',
     };
     
     swag = new Swag(jsonPaths)
@@ -31,6 +32,9 @@ describe('swag test', () => {
     it('will result in a pass', () => {
       const getResources = {
         status: 200,
+        header: {
+          [CONTENT_TYPE]: 'application/json',
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -56,6 +60,9 @@ describe('swag test', () => {
     it('will result in a fail', () => {
       const getResources = {
         status: 200,
+        header: {
+          [CONTENT_TYPE]: 'application/json',
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -81,6 +88,9 @@ describe('swag test', () => {
     it('will result in a pass', () => {
       const getMoreResources = {
         status: 200,
+        header: { 
+          [CONTENT_TYPE]: 'application/json'
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -105,6 +115,9 @@ describe('swag test', () => {
     it('will result in a fail', () => {
       const getMoreResources = {
         status: 200,
+        header: { 
+          [CONTENT_TYPE]: 'application/json'
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -125,11 +138,14 @@ describe('swag test', () => {
 
   });
 
-  describe('url will match with the longest regex i.e. best match', () => {
+  describe('url will match with the regex best matched', () => {
 
     it('will result in a pass', () => {    
       const deleteResource = {
         status: 204,
+        header: { 
+          [CONTENT_TYPE]: 'application/json'
+        },
         body: {},
         req: {
           url: 'http://v1/resources/19',
@@ -148,6 +164,9 @@ describe('swag test', () => {
     it('will result in an error', () => {
       const getResources = {
         status: 200,
+        header: { 
+          [CONTENT_TYPE]: 'application/json'
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -175,6 +194,9 @@ describe('swag test', () => {
     it('will result in an error', () => {
       const getResources = {
         status: 200,
+        header: { 
+          [CONTENT_TYPE]: 'application/json'
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -201,6 +223,9 @@ describe('swag test', () => {
     it('will result in an error', () => {
       const getResources = {
         status: 200,
+        header: { 
+          [CONTENT_TYPE]: 'application/json'
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -226,6 +251,9 @@ describe('swag test', () => {
     it('will result in an error', () => {
       const getResources = {
         status: 201,
+        header: { 
+          [CONTENT_TYPE]: 'application/json'
+        },
         body: {
           attributeOne: 'is a string',
           attributeTwo: {
@@ -250,6 +278,9 @@ describe('swag test', () => {
   describe('swagger with allOf', () => {
     const postFood = {
       status: 201,
+      header: { 
+        [CONTENT_TYPE]: 'application/json'
+      },
       body: {
         toppings: [
           'pineapple'
@@ -284,9 +315,11 @@ describe('swag test', () => {
   });
 
   describe('open-api 3.0 spec', () => {
-    const CONTENT_TYPE = 'content-type';
     const getResponse = {
       status: 200,
+      header: {
+        [CONTENT_TYPE]: 'application/json',
+      },
       body: {
         attributeOne: 'a string',
         attributeTwo: {
@@ -298,9 +331,6 @@ describe('swag test', () => {
         url: 'http://v1/resources/777',
         method: 'get',
       },
-      headers: {
-        [CONTENT_TYPE]: 'application/json',
-      },
     };
 
     it('will result in a pass', () => {
@@ -308,6 +338,67 @@ describe('swag test', () => {
       try { result = swag.validate(openApi, getResponse) } catch(e) { result = e };
       
       expect(result, JSON.stringify(result, null, 2)).to.be.true;
+    });
+  });
+
+  describe('paths pointed to incorrect properties in response data', () => {
+    const url = '/req/url';
+    const status = '/status';
+    const method = '/req/method'
+    const contentType = '/header/content-type';
+    const responseBody = '/body';
+
+    const getResponse = {
+      status: 200,
+      header: {
+        [CONTENT_TYPE]: 'application/json',
+      },
+      body: {
+        attributeOne: 'a string',
+        attributeTwo: {
+          subAttributeOne: 777,
+          subAttributeTwo: true,
+        },
+      },
+      req: {
+        url: 'http://v1/resources/777',
+        method: 'get',
+      },
+    };
+
+    it('will fail if url is incorrectly defined in path', () => {
+      const incorrectUrl = '/bad/url';
+      const badSwag = new Swag({ url: incorrectUrl, status, method, contentType, responseBody });
+
+      expect(() => badSwag.validate(openApi, getResponse)).throws('The url did not have a value. Check the url json pointer');
+    });
+
+    it('will fail if status is incorrectly defined in path', () => {
+      const incorrectStatus = '/bad/status';
+      const badSwag = new Swag({ url, status: incorrectStatus, method, contentType, responseBody });
+
+      expect(() => badSwag.validate(openApi, getResponse)).throws('The status did not have a value. Check the status json pointer');
+    });
+
+    it('will fail if method is incorrectly defined in path', () => {
+      const incorrectmethod = '/bad/method';
+      const badSwag = new Swag({ url, status, method: incorrectmethod, contentType, responseBody });
+
+      expect(() => badSwag.validate(openApi, getResponse)).throws('The method did not have a value. Check the method json pointer');
+    });
+
+    it('will fail if method is incorrectly defined in path', () => {
+      const incorrectContentType = '/bad/content-type';
+      const badSwag = new Swag({ url, status, method, contentType: incorrectContentType, responseBody });
+
+      expect(() => badSwag.validate(openApi, getResponse)).throws('The contentType did not have a value. Check the contentType json pointer');
+    });
+
+    it('will fail if method is incorrectly defined in path', () => {
+      const incorrectResponseBody = '/bad/response/body';
+      const badSwag = new Swag({ url, status, method, contentType, responseBody: incorrectResponseBody });
+
+      expect(() => badSwag.validate(openApi, getResponse)).throws('The responseBody did not have a value. Check the responseBody json pointer');
     });
   });
 

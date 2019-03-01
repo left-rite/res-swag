@@ -1,6 +1,6 @@
 {
   "name": "res-swag",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "validate json response with parsed swagger",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,6 +37,7 @@
   "dependencies": {
     "ajv": "6.5.4",
     "deref": "0.7.6",
+    "json-ptr": "^1.1.1",
     "md5": "2.2.1",
     "url-parse": "1.4.4"
   },
