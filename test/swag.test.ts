@@ -369,37 +369,110 @@ describe('swag test', () => {
     it('will fail if url is incorrectly defined in path', () => {
       const incorrectUrl = '/bad/url';
       const badSwag = new Swag({ url: incorrectUrl, status, method, contentType, responseBody });
+      
+      badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
-      expect(() => badSwag.validate(openApi, getResponse)).throws('The url did not have a value. Check the url json pointer');
+      expect(() => badSwag.validate(openApi, getResponse))
+        .throws('The url did not have a value. Check the url json pointer');
     });
 
     it('will fail if status is incorrectly defined in path', () => {
       const incorrectStatus = '/bad/status';
       const badSwag = new Swag({ url, status: incorrectStatus, method, contentType, responseBody });
+      
+      badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
-      expect(() => badSwag.validate(openApi, getResponse)).throws('The status did not have a value. Check the status json pointer');
+      expect(() => badSwag.validate(openApi, getResponse))
+        .throws('The status did not have a value. Check the status json pointer');
     });
 
     it('will fail if method is incorrectly defined in path', () => {
       const incorrectmethod = '/bad/method';
       const badSwag = new Swag({ url, status, method: incorrectmethod, contentType, responseBody });
+      
+      badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
-      expect(() => badSwag.validate(openApi, getResponse)).throws('The method did not have a value. Check the method json pointer');
+      expect(() => badSwag.validate(openApi, getResponse))
+        .throws('The method did not have a value. Check the method json pointer');
     });
 
     it('will fail if method is incorrectly defined in path', () => {
       const incorrectContentType = '/bad/content-type';
       const badSwag = new Swag({ url, status, method, contentType: incorrectContentType, responseBody });
+      
+      badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
-      expect(() => badSwag.validate(openApi, getResponse)).throws('The contentType did not have a value. Check the contentType json pointer');
+      expect(() => badSwag.validate(openApi, getResponse))
+        .throws('The contentType did not have a value. Check the contentType json pointer');
     });
 
     it('will fail if method is incorrectly defined in path', () => {
       const incorrectResponseBody = '/bad/response/body';
       const badSwag = new Swag({ url, status, method, contentType, responseBody: incorrectResponseBody });
+      
+      badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
-      expect(() => badSwag.validate(openApi, getResponse)).throws('The responseBody did not have a value. Check the responseBody json pointer');
+      expect(() => badSwag.validate(openApi, getResponse))
+        .throws('The responseBody did not have a value. Check the responseBody json pointer');
     });
+  });
+
+  
+  describe('casing of values in response body', () => {
+    const url = '/req/url';
+    const status = '/status';
+    const method = '/req/method'
+    const contentType = '/header/content-type';
+    const responseBody = '/body';
+
+    const getResponse = {
+      status: 200,
+      header: {
+        [CONTENT_TYPE]: 'application/json',
+      },
+      body: {
+        attributeOne: 'a string',
+        attributeTwo: {
+          subAttributeOne: 777,
+          subAttributeTwo: true,
+        },
+      },
+      req: {
+        url: 'http://v1/resources/777',
+        method: 'get',
+      },
+    };
+
+    const legitSwag = new Swag({ url, status, method, contentType, responseBody });
+    
+    legitSwag.ajv.addFormat('int32', {
+      type: 'number',
+      validate: (n) => Math.abs(n) < Math.pow(2, 31),
+    });
+
+    it(`does matter for url`, () => {
+      const modifiedResponse = JSON.parse(JSON.stringify(getResponse));
+      modifiedResponse.req.url = 'http://v1/Resource/777';
+
+      expect(() => legitSwag.validate(openApi, modifiedResponse))
+        .throws('The url "http://v1/Resource/777" did not match available basePath "" and paths "/resources, /resources/{id}');
+    });
+
+    it(`doesn't matter for method`, () => {
+      const modifiedResponse = JSON.parse(JSON.stringify(getResponse));
+      modifiedResponse.req.method = 'GET';
+      
+      expect(legitSwag.validate(openApi, modifiedResponse)).to.be.true;
+    });
+
+    it(`does matter for content-type`, () => {
+      const modifiedResponse = JSON.parse(JSON.stringify(getResponse));
+      modifiedResponse.header[CONTENT_TYPE] = 'application/JSON';
+      
+      expect(() => legitSwag.validate(openApi, modifiedResponse))
+        .throws('The content-type "application/JSON" did not match any of the available content-types "application/json" in "get /resources/{id} 200');
+    });
+
   });
 
 });
