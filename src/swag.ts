@@ -35,8 +35,6 @@ export class Swag {
     const useCaseOptions = Object.assign({}, this.options, options);
     
     const { url, method, status, contentType, responseBody } = this.getRequiredData(response);
-
-    const responseJson = responseBody ? toJson(responseBody, false) : null;
     
     const version = this.determineVersion(definition);
     
@@ -53,17 +51,18 @@ export class Swag {
         throw new Error('Unknown Swagger/OpenAPI version, only v2 and v3 are supported');
     }
     
+
     if (schemaReference.type === ReferenceType.NoContent) {
-      if (!isTruthyJson(responseJson)) {
+      if (!responseBody) {
         return true;
       }
 
-      const errorMessage = JSON.stringify({ url, responseJson, schema: schemaReference.pointer }, null, 4);
+      const errorMessage = JSON.stringify({ url, responseBody, schema: schemaReference.pointer }, null, 4);
       throw new Error(`Expected an empty response body. ${errorMessage}`);
     }
 
-    if (schemaReference.type === ReferenceType.JSON && !responseJson) {
-      const errorMessage = JSON.stringify({ url, responseJson, schema: schemaReference.pointer }, null, 4);
+    if (schemaReference.type === ReferenceType.JSON && !responseBody) {
+      const errorMessage = JSON.stringify({ url, responseBody, schema: schemaReference.pointer }, null, 4);
       throw new Error(`Expected json response body. ${errorMessage}`);
     }
 
@@ -84,6 +83,7 @@ export class Swag {
       this.ajv.addSchema(deferencedDefinition, key);
     }
 
+    const responseJson = toJson(responseBody, false);
     const result = this.ajv.validate(key+schemaReference.pointer, responseJson);
 
     const errorMessage: ErrorMessage = {
@@ -120,7 +120,7 @@ export class Swag {
     const rawMethod = jsonPtr.get(response, this.paths.method);
     const status = jsonPtr.get(response, this.paths.status);
     const rawContentType = jsonPtr.get(response, this.paths.contentType) || [];
-    const responseBody = jsonPtr.get(response, this.paths.responseBody);
+    const responseBody = jsonPtr.get(response, this.paths.responseBody) || null;
 
     const checkNullOrUndefined = (n, p) => { if (isNullOrUndefined(p)) { 
       throw new Error(`The ${n} did not have a value. Check the ${n} json pointer`); 

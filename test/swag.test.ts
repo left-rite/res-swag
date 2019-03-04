@@ -414,7 +414,7 @@ describe('swag test', () => {
 
       const jsonDetails = {
         "url": "http://v1/resources/777",
-        "responseJson": null,
+        "responseBody": null,
         "schema": "#/paths/~1resources~1{id}/get/responses/200/content/application~1json/schema"
       };
 
@@ -508,14 +508,19 @@ describe('swag test', () => {
     });
 
     it('body={}', () => {
-      expect(swag.validate(swagger, getResponse({}))).to.be.true;
+      const func = () => swag.validate(swagger, getResponse({}));
+      expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
+          url: 'http://v1/resources/888', 
+          responseBody: {},
+          schema: '#/paths/~1resources~1{id}/get/responses/404' 
+        }, null, 4)}`);
     });
 
     it(`body={ has: 'item' }`, () => {
       const func = () => swag.validate(swagger, getResponse({ has: 'item' }));
       expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
           url: 'http://v1/resources/888', 
-          responseJson: { has: 'item' }, 
+          responseBody: { has: 'item' }, 
           schema: '#/paths/~1resources~1{id}/get/responses/404' 
         }, null, 4)}`);
     });
@@ -548,14 +553,28 @@ describe('swag test', () => {
     });
 
     it('body={}', () => {
-      expect(swag.validate(openApi, getResponse({}))).to.be.true;
+      const func = () => swag.validate(openApi, getResponse({}));
+      expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
+          url: 'http://v1/resources/888', 
+          responseBody: {},
+          schema: '#/paths/~1resources~1{id}/get/responses/404' 
+        }, null, 4)}`);
     });
     
     it(`body={ has: 'item' }`, () => {
       const func = () => swag.validate(openApi, getResponse({ has: 'item' }));
       expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
           url: 'http://v1/resources/888', 
-          responseJson: { has: 'item' }, 
+          responseBody: { has: 'item' }, 
+          schema: '#/paths/~1resources~1{id}/get/responses/404' 
+        }, null, 4)}`);
+    });
+
+    it(`body="Not found"`, () => {
+      const func = () => swag.validate(openApi, getResponse('Not found'));
+      expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
+          url: 'http://v1/resources/888', 
+          responseBody: 'Not found', 
           schema: '#/paths/~1resources~1{id}/get/responses/404' 
         }, null, 4)}`);
     });
