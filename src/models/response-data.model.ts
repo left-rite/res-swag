@@ -2,6 +2,6 @@ export interface ResponseData {
   url: string,
   method: string,
   status: number,
-  contentType: string | string[],
+  contentType: string[],
   responseBody: any,
 }

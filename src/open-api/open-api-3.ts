@@ -4,6 +4,7 @@ import { ServerInfoNavigator } from './server-info';
 import { SwagOptions } from '../swag.options';
 import { getProperties } from '../util/properties';
 import { findBestPath } from '../util/path';
+import { SchemaReference, ReferenceType } from '../models/schema-reference.model';
 
 export class OpenApi3Navigator {
 
@@ -13,7 +14,7 @@ export class OpenApi3Navigator {
     this.serverInfo = new ServerInfoNavigator;
   }
 
-  getSchemaReference(openapi: OpenApi3, url: string, method: string, status: number, contentType: string | string[], options: SwagOptions): string {
+  getSchemaReference(openapi: OpenApi3, url: string, method: string, status: number, contentType: string[], options: SwagOptions): SchemaReference {
     const basePath = this.serverInfo.getBasePath(openapi, url, options.ignoreUnknownServer) || '';
     const paths = getProperties(openapi.paths);
     
@@ -36,22 +37,31 @@ export class OpenApi3Navigator {
     if (!statuses.includes(status.toString())) {
       throw new Error(`The status ${status} did not match available statuses "${statuses.join(', ')}" in "${method} ${match}"`);
     }
-
-    const responseContentType = Array.isArray(contentType) ? contentType : contentType.split(';').map(c => c.trim());
-    const availableContentType = getProperties(path[method].responses[status].content);
     
-    const types = responseContentType.filter(r => availableContentType.includes(r));
+    if (!path[method].responses[status].content) {
+      return {
+        type: ReferenceType.NoContent,
+        pointer: `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}`,
+      };
+    }
+
+    const content = getProperties(path[method].responses[status].content);
+
+    const types = contentType.filter(r => content.includes(r));
 
     if (types.length !== 1) {
-      const actual = responseContentType.join('; ');
-      const expected = availableContentType.join('; ');
+      const actual = contentType.join('; ');
+      const expected = content.join('; ');
       const scenario = types.length === 0 ? 'did not match any of the available' : 'matched more than 1 of the available';
       throw new Error(`The content-type "${actual}" ${scenario} content-types "${expected}" in "${method} ${match} ${status}"`);
     }
 
     const type = types[0];
 
-    return `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}/content/${encodeJsonProperty(type)}/schema`;
+    return {
+      type: ReferenceType.JSON,
+      pointer: `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}/content/${encodeJsonProperty(type)}/schema`,
+    };
   }
 
 }

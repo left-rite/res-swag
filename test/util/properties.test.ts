@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { banUnknownProperties, allowNullableProperties, allowNullableObjects } from '../../src/util/properties';
+import { banUnknownProperties, allowNullableProperties, allowNullableObjects, getProperties } from '../../src/util/properties';
 
 describe('additional properties test', () => {
 
@@ -113,6 +113,7 @@ describe('nullability test', () => {
         },
       },
     };
+
     const nullableObjectObject = allowNullableObjects(true, obj);
 
     it('will modify object to make object types nullable', () => {
@@ -139,6 +140,28 @@ describe('nullability test', () => {
       });
     });
 
+  });
+
+});
+
+describe('getProperties test', () => {
+  
+  it('with 3 properties in object should be ok', () => {
+    
+    const obj = {
+      one: '',
+      two: {},
+      three: [],
+    };
+  
+    expect(getProperties(obj)).to.deep.equal(['one', 'two', 'three']);
+  });
+  
+  it('with no properties in object should be ok', () => {
+    
+    const obj = {};
+  
+    expect(getProperties(obj)).to.deep.equal([]);
   });
 
 });

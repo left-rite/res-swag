@@ -51,6 +51,9 @@
             "schema": {
               "$ref": "#/definitions/badRequest"
             }
+          },
+          "404": {
+            "description": "Not found (no content)"
           }
         }
       },

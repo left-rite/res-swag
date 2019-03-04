@@ -396,24 +396,31 @@ describe('swag test', () => {
         .throws('The method did not have a value. Check the method json pointer');
     });
 
-    it('will fail if method is incorrectly defined in path', () => {
+    it('will NOT fail at pointer if content-type is incorrectly defined in path (or content-type is empty)', () => {
       const incorrectContentType = '/bad/content-type';
       const badSwag = new Swag({ url, status, method, contentType: incorrectContentType, responseBody });
       
       badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
       expect(() => badSwag.validate(openApi, getResponse))
-        .throws('The contentType did not have a value. Check the contentType json pointer');
+        .throws('The content-type "" did not match any of the available content-types "application/json" in "get /resources/{id} 200"');
     });
 
-    it('will fail if method is incorrectly defined in path', () => {
+    it('will NOT fail at pointer if response body is incorrectly defined in path (or response body is empty)', () => {
       const incorrectResponseBody = '/bad/response/body';
       const badSwag = new Swag({ url, status, method, contentType, responseBody: incorrectResponseBody });
       
       badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
-      expect(() => badSwag.validate(openApi, getResponse))
-        .throws('The responseBody did not have a value. Check the responseBody json pointer');
+      const jsonDetails = {
+        "url": "http://v1/resources/777",
+        "responseJson": null,
+        "schema": "#/paths/~1resources~1{id}/get/responses/200/content/application~1json/schema"
+      };
+
+      const errorMessage = `Expected json response body. ${JSON.stringify(jsonDetails, null, 4)}`;
+
+      expect(() => badSwag.validate(openApi, getResponse)).throws(errorMessage);
     });
   });
 
@@ -474,5 +481,85 @@ describe('swag test', () => {
     });
 
   });
+  
+  describe('No content response body against swagger 2 definition', () => {
+    const getResponse = (body) => {
+      return {
+        status: 404,
+        header: {},
+        body,
+        req: {
+          url: 'http://v1/resources/888',
+          method: 'get',
+        },
+      };
+    };
 
+    it('body=null', () => {
+      expect(swag.validate(swagger, getResponse(null))).to.be.true;
+    });
+
+    it('body=undefined', () => {
+      expect(swag.validate(swagger, getResponse(undefined))).to.be.true;
+    });
+
+    it('body=\'\'', () => {
+      expect(swag.validate(swagger, getResponse(''))).to.be.true;
+    });
+
+    it('body={}', () => {
+      expect(swag.validate(swagger, getResponse({}))).to.be.true;
+    });
+
+    it(`body={ has: 'item' }`, () => {
+      const func = () => swag.validate(swagger, getResponse({ has: 'item' }));
+      expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
+          url: 'http://v1/resources/888', 
+          responseJson: { has: 'item' }, 
+          schema: '#/paths/~1resources~1{id}/get/responses/404' 
+        }, null, 4)}`);
+    });
+
+  });
+
+  describe('No content response body against openapi 3 definition', () => {
+    const getResponse = (body) => {
+      return {
+        status: 404,
+        header: {},
+        body,
+        req: {
+          url: 'http://v1/resources/888',
+          method: 'get',
+        },
+      };
+    };
+
+    it('body=null', () => {
+      expect(swag.validate(openApi, getResponse(null))).to.be.true;
+    });
+
+    it('body=undefined', () => {
+      expect(swag.validate(openApi, getResponse(undefined))).to.be.true;
+    });
+
+    it('body=\'\'', () => {
+      expect(swag.validate(openApi, getResponse(''))).to.be.true;
+    });
+
+    it('body={}', () => {
+      expect(swag.validate(openApi, getResponse({}))).to.be.true;
+    });
+    
+    it(`body={ has: 'item' }`, () => {
+      const func = () => swag.validate(openApi, getResponse({ has: 'item' }));
+      expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
+          url: 'http://v1/resources/888', 
+          responseJson: { has: 'item' }, 
+          schema: '#/paths/~1resources~1{id}/get/responses/404' 
+        }, null, 4)}`);
+    });
+
+  });
+  
 });

@@ -2,10 +2,11 @@ import { encodeJsonProperty } from '../util/json';
 import { Swagger2 } from '../models/swagger-2.0.model';
 import { findBestPath } from '../util/path';
 import { getProperties } from '../util/properties';
+import { SchemaReference, ReferenceType } from '../models/schema-reference.model';
 
 export class Swagger2Navigator {
 
-  getSchemaReference(swagger: Swagger2, url: string, method: string, status: number): string {
+  getSchemaReference(swagger: Swagger2, url: string, method: string, status: number): SchemaReference {
     const basePath = swagger.basePath || '';
     const paths = getProperties(swagger.paths);
     
@@ -29,7 +30,18 @@ export class Swagger2Navigator {
       throw new Error (`The status ${status} did not match available statuses "${statuses.join(', ')}" in "${method} ${match}"`);
     }
 
-    return `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}/schema`;
+    if (!path[method].responses[status].schema) {
+      return {
+        type: ReferenceType.NoContent,
+        pointer: `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}`,
+      }; 
+    }
+
+    return {
+      type: ReferenceType.JSON,
+      pointer: `#/paths/${encodeJsonProperty(match)}/${method}/responses/${status}/schema`,
+    };
+    
   }
 
 }

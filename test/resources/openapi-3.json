@@ -65,6 +65,9 @@
                   }
               }
             }
+          },
+          "404": {
+            "description": "Not found (no content)"
           }
         }
       },

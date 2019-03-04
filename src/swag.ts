@@ -2,8 +2,8 @@ import * as Ajv from 'ajv';
 import * as dereference from 'deref';
 import * as md5 from 'md5';
 import * as jsonPtr from 'json-ptr';
-import { toJson } from './util/json';
-import { banUnknownProperties, allowNullableProperties, allowNullableObjects } from './util/properties';
+import { toJson, isTruthyJson } from './util/json';
+import { banUnknownProperties, allowNullableProperties, allowNullableObjects, getProperties } from './util/properties';
 import { JsonPointers } from './models/json-pointers.model';
 import { defaultOptions, SwagOptions } from './swag.options';
 import { Version } from './models/supported-versions.model';
@@ -15,6 +15,7 @@ import { mergeSubschemas } from './util/schema';
 import { ErrorResponse as ErrorMessage } from './models/error-message.model';
 import { isNullOrUndefined } from 'util';
 import { ResponseData } from './models/response-data.model';
+import { SchemaReference, ReferenceType } from './models/schema-reference.model';
 
 export class Swag {
   
@@ -35,11 +36,11 @@ export class Swag {
     
     const { url, method, status, contentType, responseBody } = this.getRequiredData(response);
 
-    const responseJson = responseBody ? toJson(responseBody) : null;
+    const responseJson = responseBody ? toJson(responseBody, false) : null;
     
     const version = this.determineVersion(definition);
     
-    let schemaReference;
+    let schemaReference: SchemaReference;
 
     switch (version.major) {
       case 2:
@@ -50,6 +51,20 @@ export class Swag {
         break;
       default:
         throw new Error('Unknown Swagger/OpenAPI version, only v2 and v3 are supported');
+    }
+    
+    if (schemaReference.type === ReferenceType.NoContent) {
+      if (!isTruthyJson(responseJson)) {
+        return true;
+      }
+
+      const errorMessage = JSON.stringify({ url, responseJson, schema: schemaReference.pointer }, null, 4);
+      throw new Error(`Expected an empty response body. ${errorMessage}`);
+    }
+
+    if (schemaReference.type === ReferenceType.JSON && !responseJson) {
+      const errorMessage = JSON.stringify({ url, responseJson, schema: schemaReference.pointer }, null, 4);
+      throw new Error(`Expected json response body. ${errorMessage}`);
     }
 
     const signature = JSON.stringify( { definition, options });
@@ -69,12 +84,12 @@ export class Swag {
       this.ajv.addSchema(deferencedDefinition, key);
     }
 
-    const result = this.ajv.validate(key+schemaReference, responseJson);
-    
+    const result = this.ajv.validate(key+schemaReference.pointer, responseJson);
+
     const errorMessage: ErrorMessage = {
       url,
       responseBody: responseJson, 
-      schema: schemaReference, 
+      schema: schemaReference.pointer, 
       errors: this.ajv.errors 
     };
     
@@ -102,9 +117,9 @@ export class Swag {
 
   private getRequiredData(response: any): ResponseData {
     const url = jsonPtr.get(response, this.paths.url);
-    const method = jsonPtr.get(response, this.paths.method);
+    const rawMethod = jsonPtr.get(response, this.paths.method);
     const status = jsonPtr.get(response, this.paths.status);
-    const contentType = jsonPtr.get(response, this.paths.contentType);
+    const rawContentType = jsonPtr.get(response, this.paths.contentType) || [];
     const responseBody = jsonPtr.get(response, this.paths.responseBody);
 
     const checkNullOrUndefined = (n, p) => { if (isNullOrUndefined(p)) { 
@@ -112,14 +127,15 @@ export class Swag {
     }};
 
     checkNullOrUndefined('url', url);
-    checkNullOrUndefined('method', method);
+    checkNullOrUndefined('method', rawMethod);
     checkNullOrUndefined('status', status);
-    checkNullOrUndefined('contentType', contentType);
-    checkNullOrUndefined('responseBody', responseBody);
+
+    const method = rawMethod.toLowerCase();
+    const contentType = Array.isArray(rawContentType) ? rawContentType : rawContentType.split(';').map(c => c.trim());
 
     return { 
-      url: url, 
-      method: method.toLowerCase(),
+      url, 
+      method,
       status, 
       contentType, 
       responseBody
