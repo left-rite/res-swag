@@ -12,6 +12,9 @@ describe('additional properties test', () => {
           thisIsAString: 'string',
         },
         additionalProperties: true,
+        example: {
+          thisIsAString: null,
+        },
       },
     },
   };
@@ -51,6 +54,10 @@ describe('nullability test', () => {
             },
           },
           additionalProperties: true,
+          example: {
+            thisIsAString: null,
+            thisIsANumber: null,
+          },
         },
       },
     };
@@ -72,6 +79,10 @@ describe('nullability test', () => {
               },
             },
             additionalProperties: true,
+            example: {
+              thisIsAString: null,
+              thisIsANumber: null,
+            },
           },
         },
       });
@@ -95,6 +106,10 @@ describe('nullability test', () => {
             },
           },
           additionalProperties: true,
+          example: {
+            thisIsAString: null,
+            thisIsANumber: null,
+          },
         },
       },
     };
@@ -115,6 +130,10 @@ describe('nullability test', () => {
               },
             },
             additionalProperties: true,
+            example: {
+              thisIsAString: null,
+              thisIsANumber: null,
+            },
           },
         },
       });

@@ -1,9 +1,8 @@
 import { isNullOrUndefined } from 'util';
 
 export const banUnknownProperties = (ban: boolean, object: any): any => {
-  if (ban && typeof object === 'object') {
-    Object.keys(object).filter(k => object.hasOwnProperty(k))
-      .forEach(k => banUnknownProperties(ban, object[k]));
+  if (ban && object && typeof object === 'object') {
+    getProperties(object).forEach(p => banUnknownProperties(ban, object[p]));
 
     if (object.type === 'object' && isNullOrUndefined(object.additionalProperties)) {
       object.additionalProperties = false;
@@ -14,9 +13,8 @@ export const banUnknownProperties = (ban: boolean, object: any): any => {
 };
 
 export const allowNullable = (allow: boolean, object: any, rule: (obj: any) => boolean): any => {
-  if (allow && typeof object === 'object') {
-    Object.keys(object).filter(k => object.hasOwnProperty(k))
-      .forEach(k => allowNullable(allow, object[k], rule));
+  if (allow && object && typeof object === 'object') {
+    getProperties(object).forEach(p => allowNullable(allow, object[p], rule));
 
     if (object.type && rule(object)) {
       if (Array.isArray(object.type) && !object.type.includes('null')) { 

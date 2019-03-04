@@ -1,4 +1,3 @@
-import { toRegex } from '../util/regex';
 import { encodeJsonProperty } from '../util/json';
 import { OpenApi3 } from '../models/openapi-3.0.model';
 import { ServerInfoNavigator } from './server-info';
