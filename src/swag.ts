@@ -1,8 +1,7 @@
 import * as Ajv from 'ajv';
-import * as dereference from 'deref';
 import * as md5 from 'md5';
-import * as jsonPtr from 'json-ptr';
-import { toJson, isTruthyJson } from './util/json';
+import * as jref from 'jref';
+import { toJson } from './util/json';
 import { banUnknownProperties, allowNullableProperties, allowNullableObjects, getProperties } from './util/properties';
 import { JsonPointers } from './models/json-pointers.model';
 import { defaultOptions, SwagOptions } from './swag.options';
@@ -16,6 +15,8 @@ import { ErrorResponse as ErrorMessage } from './models/error-message.model';
 import { isNullOrUndefined } from 'util';
 import { ResponseData } from './models/response-data.model';
 import { SchemaReference, ReferenceType } from './models/schema-reference.model';
+
+const CONTENT_TYPE = 'content-type';
 
 export class Swag {
   
@@ -71,8 +72,8 @@ export class Swag {
 
     if (!this.ajv.getSchema(key)) {
       const clonedDefinition = JSON.parse(JSON.stringify(definition));
-      const deferencedDefinition = dereference()(clonedDefinition, true);
-  
+      const deferencedDefinition = jref.dereference(clonedDefinition);
+
       if (!definition.id) { 
         delete deferencedDefinition.id;
       }
@@ -116,11 +117,11 @@ export class Swag {
   }
 
   private getRequiredData(response: any): ResponseData {
-    const url = jsonPtr.get(response, this.paths.url);
-    const rawMethod = jsonPtr.get(response, this.paths.method);
-    const status = jsonPtr.get(response, this.paths.status);
-    const rawContentType = jsonPtr.get(response, this.paths.contentType) || [];
-    const responseBody = jsonPtr.get(response, this.paths.responseBody) || null;
+    const url = jref.traverse(response, this.paths.url);
+    const rawMethod = jref.traverse(response, this.paths.method);
+    const status = jref.traverse(response, this.paths.status);
+    const headers = jref.traverse(response, this.paths.headers);
+    const responseBody = jref.traverse(response, this.paths.responseBody) || null;
 
     const checkNullOrUndefined = (n, p) => { if (isNullOrUndefined(p)) { 
       throw new Error(`The ${n} did not have a value. Check the ${n} json pointer`); 
@@ -131,6 +132,8 @@ export class Swag {
     checkNullOrUndefined('status', status);
 
     const method = rawMethod.toLowerCase();
+
+    const rawContentType = headers && headers[CONTENT_TYPE] ? headers[CONTENT_TYPE] : [];
     const contentType = Array.isArray(rawContentType) ? rawContentType : rawContentType.split(';').map(c => c.trim());
 
     return { 

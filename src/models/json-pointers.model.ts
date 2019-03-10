@@ -4,6 +4,6 @@ export interface JsonPointers {
   url: JsonPointer,
   method: JsonPointer,
   status: JsonPointer,
-  contentType?: JsonPointer,
+  headers?: JsonPointer,
   responseBody: JsonPointer,
 }

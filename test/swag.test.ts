@@ -15,7 +15,7 @@ describe('swag test', () => {
       url: '/req/url',
       method: '/req/method',
       status: '/status',
-      contentType: '/header/content-type',
+      headers: '/header',
       responseBody: '/body',
     };
     
@@ -345,7 +345,7 @@ describe('swag test', () => {
     const url = '/req/url';
     const status = '/status';
     const method = '/req/method'
-    const contentType = '/header/content-type';
+    const headers = '/header';
     const responseBody = '/body';
 
     const getResponse = {
@@ -368,59 +368,67 @@ describe('swag test', () => {
 
     it('will fail if url is incorrectly defined in path', () => {
       const incorrectUrl = '/bad/url';
-      const badSwag = new Swag({ url: incorrectUrl, status, method, contentType, responseBody });
+      const badSwag = new Swag({ url: incorrectUrl, status, method, headers, responseBody });
       
       badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
       expect(() => badSwag.validate(openApi, getResponse))
-        .throws('The url did not have a value. Check the url json pointer');
+        .throws(/^Object does not have a property of \'bad\'/);
     });
 
     it('will fail if status is incorrectly defined in path', () => {
       const incorrectStatus = '/bad/status';
-      const badSwag = new Swag({ url, status: incorrectStatus, method, contentType, responseBody });
+      const badSwag = new Swag({ url, status: incorrectStatus, method, headers, responseBody });
       
       badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
       expect(() => badSwag.validate(openApi, getResponse))
-        .throws('The status did not have a value. Check the status json pointer');
+        .throws(/^Object does not have a property of \'bad\'/);
     });
 
     it('will fail if method is incorrectly defined in path', () => {
       const incorrectmethod = '/bad/method';
-      const badSwag = new Swag({ url, status, method: incorrectmethod, contentType, responseBody });
+      const badSwag = new Swag({ url, status, method: incorrectmethod, headers, responseBody });
       
       badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
       expect(() => badSwag.validate(openApi, getResponse))
-        .throws('The method did not have a value. Check the method json pointer');
+        .throws(/^Object does not have a property of \'bad\'/);
     });
 
-    it('will NOT fail at pointer if content-type is incorrectly defined in path (or content-type is empty)', () => {
+    it('will fail headers is incorrectly defined in path', () => {
       const incorrectContentType = '/bad/content-type';
-      const badSwag = new Swag({ url, status, method, contentType: incorrectContentType, responseBody });
+      const badSwag = new Swag({ url, status, method, headers: incorrectContentType, responseBody });
       
       badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
       expect(() => badSwag.validate(openApi, getResponse))
-        .throws('The content-type "" did not match any of the available content-types "application/json" in "get /resources/{id} 200"');
+      .throws(/^Object does not have a property of \'bad\'/);
     });
 
-    it('will NOT fail at pointer if response body is incorrectly defined in path (or response body is empty)', () => {
+    
+    it('will NOT fail if content-type is empty', () => {
+      const emptyContentTypeResponse = {
+        status: 404,
+        header: {
+          [CONTENT_TYPE]: null,
+        },
+        body: '',
+        req: {
+          url: 'http://v1/resources/777',
+          method: 'get',
+        },
+      };
+      expect(swag.validate(openApi, emptyContentTypeResponse)).to.be.true;
+    });
+
+    it('will fail at pointer if response body is incorrectly defined in path (or response body is empty)', () => {
       const incorrectResponseBody = '/bad/response/body';
-      const badSwag = new Swag({ url, status, method, contentType, responseBody: incorrectResponseBody });
+      const badSwag = new Swag({ url, status, method, headers, responseBody: incorrectResponseBody });
       
       badSwag.ajv.addFormat('int32', { type: 'number', validate: (n) => Math.abs(n) < Math.pow(2, 31) });
 
-      const jsonDetails = {
-        "url": "http://v1/resources/777",
-        "responseBody": null,
-        "schema": "#/paths/~1resources~1{id}/get/responses/200/content/application~1json/schema"
-      };
-
-      const errorMessage = `Expected json response body. ${JSON.stringify(jsonDetails, null, 4)}`;
-
-      expect(() => badSwag.validate(openApi, getResponse)).throws(errorMessage);
+      expect(() => badSwag.validate(openApi, getResponse)).throws(/^Object does not have a property of 'bad'/);
     });
   });
 
@@ -429,7 +437,7 @@ describe('swag test', () => {
     const url = '/req/url';
     const status = '/status';
     const method = '/req/method'
-    const contentType = '/header/content-type';
+    const headers = '/header';
     const responseBody = '/body';
 
     const getResponse = {
@@ -450,7 +458,7 @@ describe('swag test', () => {
       },
     };
 
-    const legitSwag = new Swag({ url, status, method, contentType, responseBody });
+    const legitSwag = new Swag({ url, status, method, headers, responseBody });
     
     legitSwag.ajv.addFormat('int32', {
       type: 'number',
@@ -500,7 +508,7 @@ describe('swag test', () => {
     });
 
     it('body=undefined', () => {
-      expect(swag.validate(swagger, getResponse(undefined))).to.be.true;
+      expect(() => swag.validate(swagger, getResponse(undefined))).to.throw(/^Object does not have a property of 'body'/);
     });
 
     it('body=\'\'', () => {
@@ -509,6 +517,7 @@ describe('swag test', () => {
 
     it('body={}', () => {
       const func = () => swag.validate(swagger, getResponse({}));
+
       expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
           url: 'http://v1/resources/888', 
           responseBody: {},
@@ -518,6 +527,7 @@ describe('swag test', () => {
 
     it(`body={ has: 'item' }`, () => {
       const func = () => swag.validate(swagger, getResponse({ has: 'item' }));
+
       expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
           url: 'http://v1/resources/888', 
           responseBody: { has: 'item' }, 
@@ -545,7 +555,7 @@ describe('swag test', () => {
     });
 
     it('body=undefined', () => {
-      expect(swag.validate(openApi, getResponse(undefined))).to.be.true;
+      expect(() => swag.validate(openApi, getResponse(undefined))).to.throw(/^Object does not have a property of 'body'/);
     });
 
     it('body=\'\'', () => {
@@ -554,6 +564,7 @@ describe('swag test', () => {
 
     it('body={}', () => {
       const func = () => swag.validate(openApi, getResponse({}));
+
       expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
           url: 'http://v1/resources/888', 
           responseBody: {},
@@ -563,6 +574,7 @@ describe('swag test', () => {
     
     it(`body={ has: 'item' }`, () => {
       const func = () => swag.validate(openApi, getResponse({ has: 'item' }));
+
       expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
           url: 'http://v1/resources/888', 
           responseBody: { has: 'item' }, 
@@ -572,11 +584,45 @@ describe('swag test', () => {
 
     it(`body="Not found"`, () => {
       const func = () => swag.validate(openApi, getResponse('Not found'));
+
       expect(func).throws(`Expected an empty response body. ${JSON.stringify({ 
           url: 'http://v1/resources/888', 
           responseBody: 'Not found', 
           schema: '#/paths/~1resources~1{id}/get/responses/404' 
         }, null, 4)}`);
+    });
+
+  });
+
+  describe('deep references in endpoint response should resolve properly', () => {
+    const getResponse = (body) => {
+      return {
+        status: 400,
+        header: {
+          [CONTENT_TYPE]: 'application/json',
+        },
+        body,
+        req: {
+          url: 'http://v1/resources',
+          method: 'get',
+        },
+      };
+    };
+
+    it('an expected response should pass validation', () => {
+      const response = {
+        errors: [ 1, 2, 3 ]
+      };
+
+      expect(swag.validate(openApi, getResponse(response))).to.be.true;
+    });
+    
+    it('an unexpected response should fail validation', () => {
+      const response = {
+        errors: [ { o: 3 } ]
+      };
+
+      expect(swag.validate(openApi, getResponse(response))).to.not.be.true;
     });
 
   });

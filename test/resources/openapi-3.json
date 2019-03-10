@@ -153,9 +153,24 @@
       ],
       "properties": {
         "errors": {
-          "type": "string",
-          "description": "This tells you the bad things that you have done"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/error"
+          }
         }
+      },
+      "additionalProperties": { 
+        "$ref": "#/definitions/info"
+      }
+    }, 
+    "error": {
+      "type": "number",
+      "description": "This tells you the bad things that you have done"
+    },
+    "info": {
+      "type": "object",
+      "properties": {
+        "info": { "type": "string" }
       }
     }
   }

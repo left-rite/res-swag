@@ -43,5 +43,5 @@ export const allowNullableObjects = (allow: boolean, object: any): any => {
 };
 
 export const getProperties = (object: any): string[] => {
-  return Object.keys(object).filter(k => object.hasOwnProperty(k));
+  return Object.getOwnPropertyNames(object);
 };

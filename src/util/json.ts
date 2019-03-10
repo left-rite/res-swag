@@ -23,7 +23,3 @@ export const toJson = (input: any, strict: boolean = true): any => {
       throw new Error('Could not parse input');
   }
 }
-
-export const isTruthyJson = (obj: any): boolean => {
-  return !!(obj && getProperties(obj).length);
-}

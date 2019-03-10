@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { encodeJsonProperty, toJson, isTruthyJson } from '../../src/util/json';
+import { encodeJsonProperty, toJson } from '../../src/util/json';
 
 describe('encode json test', () => {
 
@@ -100,27 +100,6 @@ describe('to json test', () => {
         expect(toJson(und, false)).to.be.deep.equal({});
       });
       
-    });
-
-    describe('isTruthyJson test', () => {
-
-      it('blank object will return false', () => {
-        expect(isTruthyJson({})).to.be.false;
-      });
-
-      
-      it('null object will return false', () => {
-        expect(isTruthyJson(null)).to.be.false;
-      });
-      
-      it('non-empty object will return true', () => {
-        expect(isTruthyJson({ c: '' })).to.be.true;
-      });
-
-      it('array object will return false', () => {
-        expect(isTruthyJson([])).to.be.false;
-      });
-
     });
 
 });
