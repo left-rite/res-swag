@@ -1,5 +1,3 @@
-import { getProperties } from "./properties";
-
 export const encodeJsonProperty = (property: string): string => property.replace(/\~/g, '~0').replace(/\//g, '~1');
 
 const empties = [ '', null, undefined ];

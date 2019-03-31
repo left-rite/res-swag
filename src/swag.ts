@@ -15,6 +15,7 @@ import { ErrorResponse as ErrorMessage } from './models/error-message.model';
 import { isNullOrUndefined } from 'util';
 import { ResponseData } from './models/response-data.model';
 import { SchemaReference, ReferenceType } from './models/schema-reference.model';
+import { defaultAjvOptions } from './ajv.options';
 
 const CONTENT_TYPE = 'content-type';
 
@@ -26,7 +27,7 @@ export class Swag {
   private openapi3: OpenApi3Navigator;
 
   constructor(private paths: JsonPointers, options?: Partial<SwagOptions>, ajvOptions?: Ajv.Options) {
-    this.ajv = new Ajv(ajvOptions);
+    this.ajv = new Ajv(Object.assign({}, defaultAjvOptions, ajvOptions));
     this.swagger2 = new Swagger2Navigator();
     this.openapi3 = new OpenApi3Navigator();
     this.options = Object.assign({}, defaultOptions, options);
@@ -74,10 +75,6 @@ export class Swag {
       const clonedDefinition = JSON.parse(JSON.stringify(definition));
       const deferencedDefinition = jref.dereference(clonedDefinition);
 
-      if (!definition.id) { 
-        delete deferencedDefinition.id;
-      }
-    
       mergeSubschemas(deferencedDefinition);
 
       this.customiseDefinition(deferencedDefinition, useCaseOptions);
