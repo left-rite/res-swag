@@ -39,7 +39,12 @@ describe('schema test', () => {
           bb: 'bb'
         }
       }
-    ]
+    ],
+    g: {
+      aa: 'bad',
+      cc: 'cc'
+    },
+    h: ''
   };
 
   describe('mergeSubschemas()', () => {
@@ -55,7 +60,9 @@ describe('schema test', () => {
         g: {
           aa: 'aa',
           bb: 'bb',
-        }
+          cc: 'cc',
+        },
+        h: '',
       });
     });
 

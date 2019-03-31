@@ -5,29 +5,31 @@ export const mergeSubschemas = (schema: any): any => {
     getProperties(schema).forEach(k => mergeSubschemas(schema[k]));
 
     if (schema.allOf && Array.isArray(schema.allOf)) {  
-      const combined = schema.allOf.reduce((c, s) => {
-        if (s) {
-          getProperties(s).forEach(p => {
-            if (Array.isArray(c[p])) {
-              c[p].push(...s[p]);
-            }
-            else if (typeof c[p] === 'object') {
-              c[p] = Object.assign({}, c[p], s[p]);
-            }
-            else {
-              c[p] = s[p];
-            }
-          }); 
-        }
-        
-        return c;
-      }, {});
+      const combined = schema.allOf.reduce(mergeProperties, {});
 
       delete schema.allOf;
-      schema = Object.assign(schema, combined);
+      schema = mergeProperties(schema, combined);
     }
 
   }
 
   return schema;
+};
+
+export const mergeProperties = (target: any, source: any): any => {
+  if (source) {
+    getProperties(source).forEach(p => {
+      if (Array.isArray(target[p])) {
+        target[p].push(...source[p]);
+      }
+      else if (typeof target[p] === 'object') {
+        target[p] = Object.assign({}, target[p], source[p]);
+      }
+      else {
+        target[p] = source[p];
+      }
+    }); 
+  }
+  
+  return target;
 };
